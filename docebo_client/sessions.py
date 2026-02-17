@@ -75,3 +75,4 @@ class SessionsAPI:
             return response.json()
         except requests.exceptions.RequestException as e:
             raise Exception(f"Failed to get session details: {e}")
+>>>>>>> origin/main
