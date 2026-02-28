@@ -75,4 +75,27 @@ class SessionsAPI:
             return response.json()
         except requests.exceptions.RequestException as e:
             raise Exception(f"Failed to get session details: {e}")
->>>>>>> origin/main
+    
+    def get_session_events(self, session_id: int) -> Dict[str, Any]:
+        """
+        Get the events list for a specific session
+        
+        Based on: Get events list for the session.bru
+        
+        Args:
+            session_id (int): The ID of the session
+        
+        Returns:
+            Dict: Response containing session events
+        """
+        if not self.auth.refresh_if_needed():
+            raise Exception("Authentication required")
+        
+        url = f"{self.base_url}/course/v1/sessions/{session_id}/events"
+        
+        try:
+            response = self.session.get(url)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Failed to get session events: {e}")

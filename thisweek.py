@@ -30,7 +30,7 @@ def get_classroom_sessions_for_message():
             password=os.getenv('DOCEBO_PASSWORD').strip()
         )
         
-        courses_data = client.courses.get_courses()
+        courses_data = client.courses.get_courses(get_all_pages=True)
         
         # Filter for classroom courses
         classroom_courses = [course for course in courses_data 
@@ -51,14 +51,23 @@ def get_classroom_sessions_for_message():
                 response = client.courses.get_course_sessions_by_date(
                     course_id=course_id,
                     date_from=date_from,
-                    date_to=date_to
+                    date_to=date_to,
+                    get_all_pages=True
                 )
                 
                 sessions = []
                 if isinstance(response, dict):
-                    data = response.get('data', {})
-                    if isinstance(data, dict):
-                        sessions = data.get('sessions', [])
+                    # Handle paginated response structure
+                    if 'sessions' in response:
+                        # Direct sessions array (likely paginated result)
+                        sessions = response.get('sessions', [])
+                    elif 'data' in response:
+                        data = response.get('data', {})
+                        if isinstance(data, dict):
+                            sessions = data.get('sessions', [])
+                        elif isinstance(data, list):
+                            # Sometimes data is directly a list of sessions
+                            sessions = data
                 
                 for session in sessions:
                     if isinstance(session, dict):
