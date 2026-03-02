@@ -212,22 +212,22 @@ def get_tomorrow_sessions():
                         except:
                             pass
                         
-                        # Run cmbuild command with student emails if we have any
+                        # Run cm-builder command with student emails if we have any
                         if student_emails and region:
                             try:
                                 # Create email string for piping
                                 email_string = '\n'.join(student_emails)
-                                # Execute cmbuild command with emails piped in
+                                # Execute cm-builder command with emails piped in
                                 import subprocess
                                 result = subprocess.run(
-                                    ['cmbuild', '-course', 'PAM SaaS Lab', '-region', region],
+                                    ['cm-builder', '-course', 'PAM SaaS Lab', '-region', region],
                                     input=email_string,
                                     text=True,
                                     capture_output=True
                                 )
                                 # Silently continue regardless of command result
                             except Exception:
-                                # Silently continue if cmbuild command fails
+                                # Silently continue if cm-builder command fails
                                 pass
                         
                         tomorrow_sessions.append({
