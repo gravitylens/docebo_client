@@ -84,9 +84,9 @@ def get_tomorrow_sessions():
         target_course_ids = get_cpc_ilt_course_ids()
         
         # Set up date range (for testing, use 2026-03-03)
-        # tomorrow = datetime.now() + timedelta(days=1)
-        # date_tomorrow = tomorrow.strftime('%Y-%m-%d')
-        date_tomorrow = '2026-02-23'  # Testing specific date
+        tomorrow = datetime.now() + timedelta(days=1)
+        date_tomorrow = tomorrow.strftime('%Y-%m-%d')
+        # date_tomorrow = '2026-02-23'  # Testing specific date
         
         tomorrow_sessions = []
         
@@ -121,27 +121,12 @@ def get_tomorrow_sessions():
                             if session_id:
                                 session_details = client.sessions.get_session_details(session_id)
                                 
-                                # Debug: Print session details
-                                print(f"\n=== DEBUG: Session {session_id} Details ===")
                                 if isinstance(session_details, dict) and 'data' in session_details:
                                     data = session_details['data']
-                                    print("Available fields in session data:")
-                                    for key in sorted(data.keys()):
-                                        value = data[key]
-                                        if isinstance(value, (str, int, float, bool)) or value is None:
-                                            print(f"  {key}: {value}")
-                                        elif isinstance(value, list):
-                                            print(f"  {key}: [list with {len(value)} items]")
-                                        elif isinstance(value, dict):
-                                            print(f"  {key}: [dict with keys: {list(value.keys())}]")
-                                        else:
-                                            print(f"  {key}: {type(value)}")
-                                    print("=== END DEBUG ===\n")
                                     
                                     # Extract course name from session details
                                     if 'course' in data and isinstance(data['course'], dict):
                                         course_name = data['course'].get('name', f"Course {course_id}")
-                                        print(f"DEBUG: Extracted course name: {course_name}")
                                     
                                     if 'instructors' in data and isinstance(data['instructors'], list):
                                         instructors = data['instructors']
@@ -159,25 +144,6 @@ def get_tomorrow_sessions():
                                 
                                 # Get session events for proper date/time/timezone
                                 events_response = client.sessions.get_session_events(session_id)
-                                print(f"\n=== DEBUG: Session {session_id} Events ===")
-                                print(f"Raw events response type: {type(events_response)}")
-                                print(f"Raw events response keys: {list(events_response.keys()) if isinstance(events_response, dict) else 'N/A'}")
-                                
-                                if isinstance(events_response, dict):
-                                    print("\nFull events response structure:")
-                                    for key, value in events_response.items():
-                                        if isinstance(value, (str, int, float, bool)) or value is None:
-                                            print(f"  {key}: {value}")
-                                        elif isinstance(value, list):
-                                            print(f"  {key}: [list with {len(value)} items]")
-                                            if value:  # If list is not empty, show first item structure
-                                                print(f"    First item type: {type(value[0])}")
-                                                if isinstance(value[0], dict):
-                                                    print(f"    First item keys: {list(value[0].keys())}")
-                                        elif isinstance(value, dict):
-                                            print(f"  {key}: [dict with keys: {list(value.keys())}]")
-                                        else:
-                                            print(f"  {key}: {type(value)}")
                                 
                                 # Try to access events data with different possible structures
                                 events_data = None
@@ -185,27 +151,18 @@ def get_tomorrow_sessions():
                                     if 'data' in events_response and isinstance(events_response['data'], dict):
                                         if 'items' in events_response['data']:
                                             events_data = events_response['data']['items']
-                                            print(f"\nevents_response['data']['items'] type: {type(events_data)}")
-                                            print(f"Found {len(events_data)} events in items")
                                         else:
                                             events_data = events_response['data']
-                                            print(f"\nevents_response['data'] type: {type(events_data)}")
                                     elif 'items' in events_response:
                                         events_data = events_response['items']
-                                        print(f"\nevents_response['items'] type: {type(events_data)}")
-                                    else:
-                                        print(f"\nNo 'data' or 'items' key found. Available keys: {list(events_response.keys())}")
+
                                 
                                 if events_data and isinstance(events_data, list) and events_data:
                                     # Sort events by schedule date
-                                    print(f"\nFound {len(events_data)} events, analyzing...")
-                                    
-                                    # Sort by schedule date
                                     sorted_events = sorted(events_data, key=lambda x: x.get('schedule', {}).get('date', ''))
                                     earliest_event = sorted_events[0] if sorted_events else None
                                     
                                     if earliest_event:
-                                        print(f"\nEarliest event: {earliest_event.get('name', 'Unknown')}")
                                         schedule = earliest_event.get('schedule', {})
                                         
                                         # Extract time and timezone info from schedule
@@ -220,24 +177,13 @@ def get_tomorrow_sessions():
                                         else:
                                             event_start_time = event_date or event_time
                                         
-                                        print(f"\nExtracted timing info:")
-                                        print(f"  event_date: {event_date}")
-                                        print(f"  event_time: {event_time}")
-                                        print(f"  event_start_time: {event_start_time}")
-                                        print(f"  timezone_info: {timezone_info}")
-                                        print(f"  gmt_offset: {gmt_offset}")
-                                        
                                         # Map GMT offset to datacenter region
                                         region = map_gmt_offset_to_region(gmt_offset)
-                                        print(f"  mapped_region: {region}")
                                     else:
-                                        print("\nCould not find earliest event")
                                         region = "US-CENTRAL"  # Default region
                                             
                                 else:
-                                    print("No events data found, empty list, or unexpected structure")
                                     region = "US-CENTRAL"  # Default region when no events
-                                print("=== END EVENTS DEBUG ===\n")
                                 
                         except Exception as e:
                             print(f"Error getting session details/events: {e}")
@@ -262,13 +208,27 @@ def get_tomorrow_sessions():
                                                 if email and email not in student_emails:
                                                     student_emails.append(email)
                                         
-                                        # Debug: Show collected emails
-                                        print(f"DEBUG: Collected {len(student_emails)} student emails for session {session_id}")
-                                        for i, email in enumerate(student_emails, 1):
-                                            print(f"  {i}. {email}")
-                                        print()
+
                         except:
                             pass
+                        
+                        # Run cmbuild command with student emails if we have any
+                        if student_emails and region:
+                            try:
+                                # Create email string for piping
+                                email_string = '\n'.join(student_emails)
+                                # Execute cmbuild command with emails piped in
+                                import subprocess
+                                result = subprocess.run(
+                                    ['cmbuild', '-course', 'PAM SaaS Lab', '-region', region],
+                                    input=email_string,
+                                    text=True,
+                                    capture_output=True
+                                )
+                                # Silently continue regardless of command result
+                            except Exception:
+                                # Silently continue if cmbuild command fails
+                                pass
                         
                         tomorrow_sessions.append({
                             'course_id': course_id,
