@@ -78,9 +78,40 @@ date_sessions = client.courses.get_course_sessions_by_date(
 # Get session roster
 if date_sessions['data']['sessions']:
     session_id = date_sessions['data']['sessions'][0]['id_session']
+    
+    # Get session roster
     roster = client.sessions.get_session_roster(session_id)
     emails = [item['email'] for item in roster['data']['items']]
     print(f"Session has {len(emails)} participants")
+    
+    # Get session details
+    details = client.sessions.get_session_details(session_id)
+    print(f"Session: {details['data']['name']}")
+    
+    # Get session events
+    events = client.sessions.get_session_events(session_id)
+    print(f"Session has {len(events['data']['items'])} events")
+
+# Look up users
+user_results = client.users.lookup_user("jason.niles")
+print(f"Found {len(user_results['data']['items'])} users")
+
+# Option 1: Get enrollments directly by search (recommended)
+enrollments = client.users.get_enrollments("jason.niles")
+print(f"User has {len(enrollments['data']['items'])} enrollments")
+
+# Get only completed enrollments
+completed = client.users.get_enrollments(
+    "jason.niles", 
+    enrollment_status=["completed"]
+)
+print(f"User has {len(completed['data']['items'])} completed courses")
+
+# Option 2: Manual workflow using lookup + courses API
+if user_results['data']['items']:
+    user_id = user_results['data']['items'][0]['id_user']
+    enrollments = client.courses.get_enrollments_by_user_id(user_id)
+    print(f"User has {len(enrollments['data']['items'])} enrollments")
 ```
 
 ## API Reference
@@ -140,6 +171,15 @@ Get course sessions within a date range.
 - `get_courses(**kwargs)` - Returns just the course list without pagination metadata
 - `get_all_courses_auto_paginated()` - Simple method to get all courses across all pages
 
+#### `get_enrollments_by_user_id(user_id, enrollment_status=None)`
+Get course enrollments for a specific user.
+
+**Parameters:**
+- `user_id` (int): User ID
+- `enrollment_status` (List[str], optional): Filter by enrollment status (e.g., ["completed", "in_progress", "not_started"])
+
+**Returns:** Dict with user's course enrollments
+
 ### SessionsAPI
 
 API methods for session management.
@@ -151,6 +191,54 @@ Get enrollment roster for a specific session.
 - `session_id` (int): Session ID
 
 **Returns:** Dict with enrollments in `data.items` array, each containing email and user info
+
+#### `get_session_details(session_id)`
+Get details for a specific session.
+
+**Parameters:**
+- `session_id` (int): Session ID
+
+**Returns:** Dict with session details including name, dates, and configuration
+
+#### `get_session_events(session_id)`
+Get the events list for a specific session.
+
+**Parameters:**
+- `session_id` (int): Session ID
+
+**Returns:** Dict with session events and scheduling information
+
+### UsersAPI
+
+API methods for user management.
+
+#### `lookup_user(search_text)`
+Look up users by search text.
+
+**Parameters:**
+- `search_text` (str): Search text to find users (username, email, etc.)
+
+**Returns:** Dict with user search results in `data.items` array
+
+#### `get_enrollments(search_text, enrollment_status=None)`
+Get course enrollments for a user by searching for them first.
+
+**Parameters:**
+- `search_text` (str): Search text to find the user (username, email, etc.)
+- `enrollment_status` (List[str], optional): Filter by enrollment status (e.g. ["completed", "in_progress"])
+
+**Returns:** Dict with user's course enrollments
+
+**Raises:** Exception if user not found or multiple users found
+
+#### `get_enrollments_by_user_id(user_id, enrollment_status="completed")`
+Get course enrollments for a specific user.
+
+**Parameters:**
+- `user_id` (str): The ID of the user
+- `enrollment_status` (str): Filter by enrollment status (default: "completed")
+
+**Returns:** Dict with user's course enrollments in `data.items` array
 
 ### DoceboAuth
 

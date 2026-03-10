@@ -8,6 +8,7 @@ from typing import Optional
 from .auth import DoceboAuth
 from .courses import CoursesAPI
 from .sessions import SessionsAPI
+from .users import UsersAPI
 
 # Load environment variables
 try:
@@ -57,6 +58,7 @@ class DoceboClient:
         # Initialize API modules
         self.courses = CoursesAPI(self.base_url, self.session, self.auth)
         self.sessions = SessionsAPI(self.base_url, self.session, self.auth)
+        self.users = UsersAPI(self.base_url, self.session, self.auth)
     
     def authenticate(self) -> bool:
         """

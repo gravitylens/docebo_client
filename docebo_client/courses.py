@@ -296,3 +296,41 @@ class CoursesAPI:
             List: List of all course objects
         """
         return self.get_courses(get_all_pages=True)
+    
+    def get_enrollments_by_user_id(
+        self,
+        user_id: int,
+        enrollment_status: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """
+        Get course enrollments for a specific user
+        
+        Based on: Get Enrollments.bru
+        
+        Args:
+            user_id (int): The ID of the user
+            enrollment_status (List[str], optional): Filter by enrollment status 
+                (e.g., ["completed", "in_progress", "not_started"])
+        
+        Returns:
+            Dict: Response containing course enrollments for the user
+        """
+        if not self.auth.refresh_if_needed():
+            raise Exception("Authentication required")
+        
+        url = f"{self.base_url}/course/v1/courses/enrollments"
+        
+        # Build the request body
+        data = {
+            "user_id": [str(user_id)]  # API expects array of strings
+        }
+        
+        if enrollment_status:
+            data["enrollment_status"] = enrollment_status
+        
+        try:
+            response = self.session.get(url, json=data)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Failed to get enrollments: {e}")
