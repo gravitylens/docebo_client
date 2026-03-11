@@ -9,6 +9,7 @@ from .auth import DoceboAuth
 from .courses import CoursesAPI
 from .sessions import SessionsAPI
 from .users import UsersAPI
+from .centralrepo import CentralRepoAPI
 
 # Load environment variables
 try:
@@ -59,6 +60,7 @@ class DoceboClient:
         self.courses = CoursesAPI(self.base_url, self.session, self.auth)
         self.sessions = SessionsAPI(self.base_url, self.session, self.auth)
         self.users = UsersAPI(self.base_url, self.session, self.auth)
+        self.centralrepo = CentralRepoAPI(self.base_url, self.session, self.auth)
     
     def authenticate(self) -> bool:
         """

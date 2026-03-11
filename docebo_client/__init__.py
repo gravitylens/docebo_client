@@ -9,6 +9,7 @@ from .auth import DoceboAuth
 from .courses import CoursesAPI
 from .sessions import SessionsAPI
 from .users import UsersAPI
+from .centralrepo import CentralRepoAPI
 
 __version__ = "1.0.0"
 __author__ = "Generated from Bruno API Collection"
@@ -18,5 +19,6 @@ __all__ = [
     "DoceboAuth", 
     "CoursesAPI",
     "SessionsAPI",
-    "UsersAPI"
+    "UsersAPI",
+    "CentralRepoAPI"
 ]

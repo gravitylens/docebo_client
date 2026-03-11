@@ -34,85 +34,59 @@ def format_transcript_message(search_text, enrollments):
     message = f"**Learning Transcript for '{search_text}'**\n\n"
     message += f"**Summary:** {len(courses)} completed courses\n\n"
     
-    if elearning_courses:
-        message += f"## E-Learning Courses ({len(elearning_courses)})\n\n"
-        for i, course in enumerate(elearning_courses, 1):
+    def format_course_table(course_list, title):
+        """Helper function to format a list of courses as a table"""
+        if not course_list:
+            return ""
+        
+        table = f"## {title} ({len(course_list)})\n\n"
+        table += "| Course Name | Completed | Score |\n"
+        table += "|-------------|-----------|-------|\n"
+        
+        for course in course_list:
             course_name = course.get('course_name', 'Unknown Course')
             completion_date = course.get('enrollment_completion_date', 'N/A')
             score = course.get('enrollment_score')
             
-            message += f"{i}. **{course_name}**\n"
+            # Format date
             if completion_date != 'N/A':
                 try:
-                    # Parse and format the date
                     date_obj = datetime.strptime(completion_date, '%Y-%m-%d %H:%M:%S')
-                    formatted_date = date_obj.strftime('%B %d, %Y')
-                    message += f"   Completed: {formatted_date}\n"
+                    formatted_date = date_obj.strftime('%b %d, %Y')
                 except:
-                    message += f"   Completed: {completion_date}\n"
+                    formatted_date = completion_date
+            else:
+                formatted_date = 'N/A'
             
+            # Format score
             if score and score != 'N/A':
                 try:
                     score_num = float(score)
                     if score_num > 0:
-                        message += f"   Score: {score_num}%\n"
+                        formatted_score = f"{score_num}%"
+                    else:
+                        formatted_score = "-"
                 except:
-                    pass
+                    formatted_score = "-"
+            else:
+                formatted_score = "-"
             
-            message += "\n"
+            # Escape pipe characters in course name if any
+            course_name = course_name.replace('|', '\\|')
+            
+            table += f"| {course_name} | {formatted_date} | {formatted_score} |\n"
+        
+        table += "\n"
+        return table
+    
+    if elearning_courses:
+        message += format_course_table(elearning_courses, "E-Learning Courses")
     
     if classroom_courses:
-        message += f"## Classroom Courses ({len(classroom_courses)})\n\n"
-        for i, course in enumerate(classroom_courses, 1):
-            course_name = course.get('course_name', 'Unknown Course')
-            completion_date = course.get('enrollment_completion_date', 'N/A')
-            score = course.get('enrollment_score')
-            
-            message += f"{i}. **{course_name}**\n"
-            if completion_date != 'N/A':
-                try:
-                    date_obj = datetime.strptime(completion_date, '%Y-%m-%d %H:%M:%S')
-                    formatted_date = date_obj.strftime('%B %d, %Y')
-                    message += f"   Completed: {formatted_date}\n"
-                except:
-                    message += f"   Completed: {completion_date}\n"
-            
-            if score and score != 'N/A':
-                try:
-                    score_num = float(score)
-                    if score_num > 0:
-                        message += f"   Score: {score_num}%\n"
-                except:
-                    pass
-            
-            message += "\n"
+        message += format_course_table(classroom_courses, "Classroom Courses")
     
     if other_courses:
-        message += f"## Other Courses ({len(other_courses)})\n\n"
-        for i, course in enumerate(other_courses, 1):
-            course_name = course.get('course_name', 'Unknown Course')
-            course_type = course.get('course_type', 'Unknown')
-            completion_date = course.get('enrollment_completion_date', 'N/A')
-            score = course.get('enrollment_score')
-            
-            message += f"{i}. **{course_name}** ({course_type})\n"
-            if completion_date != 'N/A':
-                try:
-                    date_obj = datetime.strptime(completion_date, '%Y-%m-%d %H:%M:%S')
-                    formatted_date = date_obj.strftime('%B %d, %Y')
-                    message += f"   Completed: {formatted_date}\n"
-                except:
-                    message += f"   Completed: {completion_date}\n"
-            
-            if score and score != 'N/A':
-                try:
-                    score_num = float(score)
-                    if score_num > 0:
-                        message += f"   Score: {score_num}%\n"
-                except:
-                    pass
-            
-            message += "\n"
+        message += format_course_table(other_courses, "Other Courses")
     
     message += "---\n"
     message += f"*Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}*"
@@ -141,8 +115,7 @@ def generate_transcript(search_text):
         error_message += f"Details: {str(e)}\n\n"
         error_message += "Please check:\n"
         error_message += "• The search text is correct\n"
-        error_message += "• The user exists in the system\n"
-        error_message += "• Your API credentials are valid\n\n"
+        error_message += "• The user exists in the system\n\n"
         error_message += f"*Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}*"
         
         return error_message

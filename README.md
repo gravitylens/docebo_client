@@ -112,6 +112,14 @@ if user_results['data']['items']:
     user_id = user_results['data']['items'][0]['id_user']
     enrollments = client.courses.get_enrollments_by_user_id(user_id)
     print(f"User has {len(enrollments['data']['items'])} enrollments")
+
+# Get LTI objects from Central Repository
+lti_objects = client.centralrepo.get_repository_materials(types=['lti'])
+print(f"Found {len(lti_objects['data'])} LTI objects")
+
+# Get all training materials from Central Repository 
+all_materials = client.centralrepo.get_repository_materials()
+print(f"Found {len(all_materials['data'])} total materials")
 ```
 
 ## API Reference
@@ -239,6 +247,37 @@ Get course enrollments for a specific user.
 - `enrollment_status` (str): Filter by enrollment status (default: "completed")
 
 **Returns:** Dict with user's course enrollments in `data.items` array
+
+### CentralRepoAPI
+
+API methods for Central Repository management.
+
+#### `get_repository_materials(folder_id=1, types=None, page=1, page_size=200, get_all_pages=False, include_subfolders=True, sort_attr="created_on", sort_dir="desc")`
+Get training materials from the Central Repository.
+
+**Parameters:**
+- `folder_id` (int, optional): Folder ID to get materials from (default: 1)  
+- `types` (List[str], optional): List of material types to filter (e.g., ['lti', 'scorm']. If None, returns all material types)
+- `page` (int, optional): Page number to retrieve (default: 1)
+- `page_size` (int, optional): Number of items per page (default: 200, max: 200)
+- `get_all_pages` (bool, optional): If True, automatically fetch all pages and return combined results (default: False)
+- `include_subfolders` (bool, optional): If True, include materials from descendant folders (default: True)
+- `sort_attr` (str, optional): Attribute to sort by (default: "created_on")
+- `sort_dir` (str, optional): Sort direction "asc" or "desc" (default: "desc")
+
+**Returns:** Dict with training materials from the central repository
+
+**Examples:**
+```python
+# Get all LTI objects including subfolders (default behavior)
+all_lti = client.central_repo.get_repository_materials(types=['lti'], get_all_pages=True)
+
+# Get only from main folder (no subfolders)  
+main_folder_only = client.central_repo.get_repository_materials(types=['lti'], include_subfolders=False)
+
+# Get with custom sorting
+sorted_materials = client.central_repo.get_repository_materials(types=['lti'], sort_attr="name", sort_dir="asc")
+```
 
 ### DoceboAuth
 
